@@ -1,0 +1,40 @@
+app:
+    address: 0x0
+    size: 0xf8000
+    region: flash_primary
+settings_storage:
+    address: 0xf8000
+    size: 0x6000
+    region: flash_primary
+nvs_storage:
+    address: 0xf8000
+    size: 0x5000
+    region: flash_primary
+config_storage:
+    address: 0xfd000
+    size: 0x1000
+    region: flash_primary
+protcfg_storage_old:
+    address: 0xfe000
+    size: 0x2000
+    region: flash_primary
+mcuboot_secondary:
+    address: 0x0
+    size: 0xec000
+    device: MX25R64
+    region: external_flash
+pad_mcuboot_secondary:
+    address: 0xec000
+    size: 0x14000
+    device: MX25R64
+    region: external_flash
+littlefs_storage:
+    address: 0x100000
+    size: 0x500000
+    device: MX25R64
+    region: external_flash
+spare:
+    address: 0x600000
+    size: 0x200000
+    device: MX25R64
+    region: external_flash

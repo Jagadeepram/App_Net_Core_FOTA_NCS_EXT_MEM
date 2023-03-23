@@ -1,0 +1,115 @@
+
+
+/* Shift the console to USB - FIXME: remove this later */
+/*
+/ {
+    chosen {
+        zephyr,console = &cdc_acm_uart0;
+    };
+};
+&zephyr_udc0 {
+        cdc_acm_uart0: cdc_acm_uart0 {
+                compatible = "zephyr,cdc-acm-uart";
+                label = "CDC_ACM_0";
+        };
+};*/
+&usbd {
+    status = "disabled";
+};
+
+/* Define the partitions in the external NOR flash memory chip */
+&mx25r64 {
+
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        /* First 1Mb is for a second program image for MCUboot */
+        partition@0 {
+            label = "mcuboot_secondary";
+            reg = <0x00000000 0xec000>;
+        };
+
+
+        /* 5056kB partition for the littlefs filesystem */
+        partition@110000 {
+            label = "littlefs_storage";
+            reg = <0x00110000 0x004F0000>;
+        };
+
+        /* 2048kB spare partition */
+        partition@600000 {
+            label = "spare";
+            reg = <0x00600000 0x00200000>;
+        };
+    };
+
+};
+
+
+/* Change the prescaler for timer0 so that it operates off the
+   lower power 1MHz clock instead of the 16MHz clock. */
+&timer0 {
+    prescaler = <4>; /* prescaler of 2^4 = divide by 16 */
+};
+
+/* Disable peripherals that we don't need */
+&i2c1 {
+    status = "disabled";
+};
+&spi2 {
+    status = "disabled";
+};
+&spi4 {
+    status = "disabled";
+    /delete-property/ cs-gpios;
+};
+&uart1 {
+    status = "disabled";
+};
+&timer1 {
+    status = "disabled";
+};
+&timer2 {
+    status = "disabled";
+};
+&wdt1 {
+    status = "okay";
+};
+/* Disable forwarding of UART pins to the network core */
+/delete-node/ &gpio_fwd;
+
+/ {
+    /* Use paritition manager to manage the layout of external NOR flash */
+    chosen {
+        nordic,pm-ext-flash = &mx25r64;
+    };
+
+    /* Redefine the LED's */
+    leds {
+        /delete-node/ led0;
+        /delete-node/ led1;
+
+        led0: led_0 {
+                gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
+                label = "Valid Temperature";
+        };
+        led1: led_1 {
+                gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+                label = "False Temperature";
+        };
+    };
+
+    aliases {
+        /* Remove unnecessary aliases */
+        /delete-property/ led2;
+        /delete-property/ led3;
+        /delete-property/ sw0;
+        /delete-property/ sw1;
+        /delete-property/ sw2;
+        /delete-property/ sw3;
+        /delete-property/ pwm-led0;
+    };
+
+};

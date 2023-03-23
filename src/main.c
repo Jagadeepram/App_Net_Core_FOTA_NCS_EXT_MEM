@@ -444,7 +444,7 @@ void main(void)
 
 	while (1) {
 
-		printk("Updated: Temperature %d\r\n", readTemperature());
+		printk("Temperature %d\r\n", readTemperature());
 		k_sleep(K_SECONDS(5));
 
 		/* Current Time Service updates only when time is changed */
