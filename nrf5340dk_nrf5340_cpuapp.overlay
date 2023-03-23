@@ -38,10 +38,16 @@
             reg = <0x00110000 0x004F0000>;
         };
 
-        /* 2048kB spare partition */
+        /* 1024kB spare partition */
         partition@600000 {
+            label = "mcuboot_secondary_1";
+            reg = <0x00600000 0x00100000>;
+        };
+
+        /* 1024kB spare partition */
+        partition@700000 {
             label = "spare";
-            reg = <0x00600000 0x00200000>;
+            reg = <0x00700000 0x00100000>;
         };
     };
 

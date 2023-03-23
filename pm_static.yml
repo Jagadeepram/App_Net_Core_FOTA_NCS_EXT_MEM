@@ -33,8 +33,19 @@ littlefs_storage:
     size: 0x500000
     device: MX25R64
     region: external_flash
-spare:
+mcuboot_secondary_1:
     address: 0x600000
-    size: 0x200000
+    size: 0x100000
     device: MX25R64
     region: external_flash
+spare:
+    address: 0x700000
+    size: 0x100000
+    device: MX25R64
+    region: external_flash
+mcuboot_primary_1:
+    address: 0x0
+    size: 0x40000
+    device: flash_ctrl
+    region: ram_flash
+
