@@ -1,0 +1,96 @@
+
+/* Remove unnecessary nodes from the default nrf5340dk configuration */
+/delete-node/ &led2;
+/delete-node/ &led3;
+/delete-node/ &arduino_header;
+/delete-node/ &arduino_adc;
+/delete-node/ &slot0_partition;
+/delete-node/ &slot1_partition;
+
+/* Disable unused peripherals */
+&usbd {
+    status = "disabled";
+};
+&timer0 {
+    prescaler = <4>; /* prescaler of 2^4 = divide by 16 */
+};
+&i2c1 {
+    status = "disabled";
+};
+&spi2 {
+    status = "disabled";
+};
+&spi4 {
+    status = "disabled";
+    /delete-property/ cs-gpios;
+};
+&uart1 {
+    status = "disabled";
+};
+&timer1 {
+    status = "disabled";
+};
+&timer2 {
+    status = "disabled";
+};
+/* Disable forwarding of UART pins to the network core */
+/delete-node/ &gpio_fwd;
+
+
+// Extending boot partition in internal flash (since slot1 will be moved)
+&flash0{
+    status = "okay";
+    partitions {
+        slot0_partition: partition@c000 {
+            label = "app";
+            reg = <0xC000 0xF8000>;
+        }; 
+    };
+};
+
+/* Define the partitions in the external NOR flash memory chip */
+&mx25r64 {
+    status = "okay";
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        slot1_partition: partition@0 {
+            label = "mcuboot_secondary";
+            reg = <0x00000000 0xEC000>;
+        };
+    };
+};
+
+/ {
+    /* Use paritition manager to manage the layout of external NOR flash */
+    chosen {
+        nordic,pm-ext-flash = &mx25r64;
+    };
+
+    /* Redefine the LED's */
+    leds {
+        /delete-node/ led0;
+        /delete-node/ led1;
+
+        led0: led_0 {
+                gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
+                label = "Fault Passage Indicator LED";
+        };
+        led1: led_1 {
+                gpios = <&gpio0 29 GPIO_ACTIVE_LOW>;
+                label = "Diagnostic LED";
+        };
+    };
+
+    aliases {
+        /* Remove unnecessary aliases */
+        /delete-property/ led2;
+        /delete-property/ led3;
+        /delete-property/ sw0;
+        /delete-property/ sw1;
+        /delete-property/ sw2;
+        /delete-property/ sw3;
+        /delete-property/ pwm-led0;
+    };
+};

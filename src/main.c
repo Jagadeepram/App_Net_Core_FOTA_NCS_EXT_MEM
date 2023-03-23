@@ -25,7 +25,27 @@
 #include <zephyr/bluetooth/services/hrs.h>
 #include <zephyr/bluetooth/services/ias.h>
 
+#include <zephyr/mgmt/mcumgr/smp_bt.h>
+#if defined(CONFIG_BT_HCI_VS_EXT)
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/hci.h>
+#include <zephyr/bluetooth/hci_vs.h>
+#endif
+// #include "filesystem.h"
 #include "cts.h"
+// #include "filesystem.h"
+#ifdef CONFIG_MCUMGR_CMD_OS_MGMT
+#include "os_mgmt/os_mgmt.h"
+#endif
+#ifdef CONFIG_MCUMGR_CMD_IMG_MGMT
+#include "img_mgmt/img_mgmt.h"
+#endif
+#ifdef CONFIG_MCUMGR_CMD_STAT_MGMT
+#include "stat_mgmt/stat_mgmt.h"
+#endif
+#ifdef CONFIG_MCUMGR_CMD_SHELL_MGMT
+#include "shell_mgmt/shell_mgmt.h"
+#endif
 
 /* Custom Service Variables */
 #define BT_UUID_CUSTOM_SERVICE_VAL \
@@ -346,11 +366,45 @@ static void hrs_notify(void)
 	bt_hrs_notify(heartrate);
 }
 
+static int readTemperature(void)
+{
+    int temp;
+#if defined(CONFIG_BT_HCI_VS_EXT)
+    struct net_buf *response = 0;
+    const struct bt_hci_rp_vs_read_chip_temp *data;
+    if (bt_hci_cmd_send_sync
+            (BT_HCI_OP_VS_READ_CHIP_TEMP, NULL, &response) != 0) {
+        // Request to the network core failed for some reason.
+        return -100;
+    }
+    data = (const struct bt_hci_rp_vs_read_chip_temp *)(response->data);
+    if (data->status == 0)
+        temp = data->temps;
+    else
+        temp = -100;
+    net_buf_unref(response);
+#else
+    temp = DEG_C(-100);
+#endif
+    return temp;
+}
+
+void start_smp_bluetooth(void)
+{
+	/* Initialize the Bluetooth mcumgr transport. */
+	printk("SMP BT Reg %d \r\n",smp_bt_register());
+}
+
 void main(void)
 {
 	struct bt_gatt_attr *vnd_ind_attr;
 	char str[BT_UUID_STR_LEN];
 	int err;
+
+	// FS_Mount();
+	// if (IS_ENABLED(CONFIG_SETTINGS)) {
+	// 	settings_load();
+	// }
 
 	err = bt_enable(NULL);
 	if (err) {
@@ -371,8 +425,27 @@ void main(void)
 	/* Implement notification. At the moment there is no suitable way
 	 * of starting delayed work so we do it here
 	 */
+
+#ifdef CONFIG_MCUMGR_CMD_OS_MGMT
+	os_mgmt_register_group();
+#endif
+#ifdef CONFIG_MCUMGR_CMD_IMG_MGMT
+	img_mgmt_register_group();
+#endif
+#ifdef CONFIG_MCUMGR_CMD_STAT_MGMT
+	stat_mgmt_register_group();
+#endif
+#ifdef CONFIG_MCUMGR_CMD_SHELL_MGMT
+	shell_mgmt_register_group();
+#endif
+#ifdef CONFIG_MCUMGR_SMP_BT
+	start_smp_bluetooth();
+#endif
+
 	while (1) {
-		k_sleep(K_SECONDS(1));
+
+		printk("Updated: Temperature %d\r\n", readTemperature());
+		k_sleep(K_SECONDS(5));
 
 		/* Current Time Service updates only when time is changed */
 		cts_notify();
