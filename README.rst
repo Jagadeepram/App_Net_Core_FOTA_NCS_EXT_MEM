@@ -1,14 +1,13 @@
 .. _ble_peripheral:
 
-Bluetooth: Peripheral
+Bluetooth: Peripheral with APP and NET Core simultaneous update on nRF5340 DK board
 #####################
 
 Overview
 ********
 
-Application demonstrating the BLE Peripheral role. It has several well-known and
-vendor-specific GATT services that it exposes.
-
+The purpose is to demonstrate working APP and NET Core simultaneous update on nRF5340 DK board
+using peripheral example.
 
 Requirements
 ************
